@@ -42,8 +42,6 @@ const options = {
     index: 'index.html'
 };
 
-app.use(express.static(path.join(__dirname, 'public')));
-
 const clients = [];
 
 app.get('/progress', (req, res) => {
@@ -115,6 +113,9 @@ app.post('/process', upload.array('images', 1000), async (req, res) => {
         res.status(400).json({ statusCode: 0, message: 'No files uploaded!' });
     }
 });
+
+
+app.use(express.static(path.join(__dirname, 'public')));
 
 // Start the server
 const port = 8081;
