@@ -39,7 +39,7 @@ const app = Fastify();
 app.register(fastifyFormbody);
 app.register(fastifyMultipart);
 app.register(fastifyStatic, {
-    root: path.join(__dirname, 'public'),
+    root: path.resolve( path.join(__dirname, 'public') ),
     prefix: '/', // optional: default '/'
 });
 
