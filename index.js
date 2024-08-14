@@ -5,9 +5,12 @@ import sharp from 'sharp';
 import imagemin from 'imagemin';
 import imageminWebp from 'imagemin-webp';
 import imageminSvgo from 'imagemin-svgo';
-import multer from 'multer';
-import express from 'express';
+import multer from 'fastify-multer';  // Fastify-compatible multer
+import Fastify from 'fastify';
 import archiver from 'archiver';
+import fastifyFormbody from '@fastify/formbody';
+import fastifyMultipart from '@fastify/multipart';
+import fastifyStatic from '@fastify/static';
 
 // Workaround to get __dirname in ES modules
 const __filename = fileURLToPath(import.meta.url);
@@ -30,31 +33,30 @@ const upload = multer({
     }
 });
 
-const app = express();
+const app = Fastify();
 
-// Middleware to parse application/x-www-form-urlencoded
-app.use(express.urlencoded({ extended: true }));
+// Register necessary plugins
+app.register(fastifyFormbody);
+app.register(fastifyMultipart);
+app.register(fastifyStatic, {
+    root: path.join(__dirname, 'public'),
+    prefix: '/', // optional: default '/'
+});
 
-// Middleware to parse application/json
-app.use(express.json());
-
-const options = {
-    index: 'index.html'
-};
-
+// SSE clients list
 const clients = [];
 
 app.get('/progress', (req, res) => {
-    res.setHeader('Content-Type', 'text/event-stream');
-    res.setHeader('Cache-Control', 'no-cache');
-    res.setHeader('Connection', 'keep-alive');
+    res.raw.setHeader('Content-Type', 'text/event-stream');
+    res.raw.setHeader('Cache-Control', 'no-cache');
+    res.raw.setHeader('Connection', 'keep-alive');
 
     // Add client to list
-    clients.push(res);
+    clients.push(res.raw);
 
     // Clean up when client disconnects
-    req.on('close', () => {
-        clients.splice(clients.indexOf(res), 1);
+    req.raw.on('close', () => {
+        clients.splice(clients.indexOf(res.raw), 1);
     });
 });
 
@@ -65,17 +67,16 @@ function sendProgressUpdate(data) {
 }
 
 // Define a route to handle multiple file uploads and other form data
-app.post('/process', upload.array('images', 1000), async (req, res) => {
-
+app.post('/process', { preHandler: upload.array('images', 1000) }, async (req, res) => {
     if (req.files && req.files.length > 0) {
         let maxWidth = Number(req.body.max_width);
 
         try {
             const archive = archiver('zip', { zlib: { level: 9 } });
-            res.setHeader('Content-Type', 'application/zip');
-            res.setHeader('Content-Disposition', 'attachment; filename=optimized_images.zip');
+            res.raw.setHeader('Content-Type', 'application/zip');
+            res.raw.setHeader('Content-Disposition', 'attachment; filename=optimized_images.zip');
 
-            archive.pipe(res);
+            archive.pipe(res.raw);
 
             let totalFiles = req.files.length;
             let processedFiles = 0;
@@ -107,19 +108,20 @@ app.post('/process', upload.array('images', 1000), async (req, res) => {
 
         } catch (error) {
             console.error('Error processing files:', error);
-            res.status(500).json({ statusCode: 0, message: 'File processing failed!', error: error.message });
+            res.status(500).send({ statusCode: 0, message: 'File processing failed!', error: error.message });
         }
     } else {
-        res.status(400).json({ statusCode: 0, message: 'No files uploaded!' });
+        res.status(400).send({ statusCode: 0, message: 'No files uploaded!' });
     }
 });
 
-
-app.use(express.static(path.join(__dirname, 'public')));
-
 // Start the server
 const port = 8081;
-app.listen(port, () => {
+app.listen({ port }, (err) => {
+    if (err) {
+        console.error(err);
+        process.exit(1);
+    }
     console.log(`my app is listening at http://localhost:${port}`);
 });
 

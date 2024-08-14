@@ -10,12 +10,16 @@
     "license": "ISC",
     "description": "",
     "dependencies": {
+        "@fastify/formbody": "^7.4.0",
+        "@fastify/multipart": "^8.3.0",
+        "@fastify/static": "^7.0.4",
         "archiver": "*",
         "express": "*",
+        "fastify": "^4.28.1",
+        "fastify-multer": "*",
         "imagemin": "*",
         "imagemin-svgo": "*",
         "imagemin-webp": "*",
-        "multer": "*",
         "path": "*",
         "sharp": "*",
         "url": "*"
