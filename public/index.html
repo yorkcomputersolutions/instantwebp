@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8" />
+        <meta lang="en-us" />
+
+        <title>Instant WebP</title>
+
+        <link rel="stylesheet" type="text/css" href="assets/css/style.css" />
+    </head>
+
+    <body>
+        <h1>Instant WebP</h1>
+
+        <ul class="upload-list"></ul>
+
+        <p>
+            <span style="font-weight: 600;">Desired max-width:</span> 
+            <input name="max_width" type="text" size="5" /><span>px</span>
+        </p>
+        <input name="image_upload" type="file" multiple="multiple" accept="image/*" />
+        <button class="button convert-images">Convert</button>
+        <p id="progress">Select images to convert. (png, or jpg/jpeg, up to 1000)</p>
+
+        <script>
+
+
+            window.addEventListener('DOMContentLoaded', () => {
+                const progressElement = document.getElementById('progress');
+                
+                /**
+                 * Uploads the images
+                 */
+                async function processImages() {
+                    progressElement.innerHTML = 'Uploading...';
+
+                    let fileInput = document.querySelector('input[name="image_upload"]');
+                    let files = fileInput.files;
+
+                    let maxWidth = document.querySelector('input[name="max_width"]');
+
+                    if (files.length > 0) {
+                        const formData = new FormData();
+                        formData.append('max_width', maxWidth.value);
+                        Object.values(files)
+                            .forEach(file => formData.append('images', file));
+
+                        try {
+                            let response = await fetch('/process', {
+                                method: 'POST',
+                                body: formData
+                            });
+
+                            if (response.ok) {
+                                let blob = await response.blob();
+                                let url = URL.createObjectURL(blob);
+                                let a = document.createElement('a');
+                                a.href = url;
+                                a.download = 'optimized_images.zip';
+                                a.click();
+                                URL.revokeObjectURL(url);
+                            } else {
+                                console.log('Request failed. Returned status of ' + response.status);
+                            }
+
+                            progressElement.innerHTML = 'Done!';
+
+                            fileInput.value = '';
+
+                            setTimeout(() => {
+                                progressElement.innerHTML = 'Select images to convert. (png, or jpg/jpeg, up to 1000)';
+                            }, 3000);
+                        } catch (error) {
+                            console.error('Error:', error);
+                            progressElement.innerHTML = 'Error: ' + error;
+                        }
+                    } else {
+                        progressElement.innerHTML = 'No images selected.';
+                    }
+                }
+
+                function setupProgressListener() {
+                    const eventSource = new EventSource('/progress');
+
+                    eventSource.onmessage = function(event) {
+                        const data = JSON.parse(event.data);
+                        console.log('receiving: ', data);
+                        progressElement.innerHTML = `Processing: ${data.processedFiles}/${data.totalFiles} files (${data.file})`;
+                    };
+
+                    eventSource.onerror = function() {
+                        progressElement.innerHTML = 'Error receiving progress updates.';
+                    };
+                }
+
+
+
+                // Initialize
+                let convertImages = document.querySelector('.convert-images');
+
+                convertImages.addEventListener('click', async () => {
+                    setupProgressListener();
+                    await processImages();
+                });
+            });
+        </script>
+    </body>
+</html>

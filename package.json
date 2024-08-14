@@ -10,17 +10,14 @@
     "license": "ISC",
     "description": "",
     "dependencies": {
-        "archiver": "^7.0.1",
-        "express": "^4.19.2",
-        "gulp": "^5.0.0",
-        "gulp-imagemin": "^9.1.0",
-        "gulp-webp": "^5.0.0",
-        "imagemin-mozjpeg": "^10.0.0",
-        "imagemin-optipng": "^8.0.0",
-        "imagemin-svgo": "^11.0.1",
-        "imagemin-webp": "^8.0.0",
-        "multer": "^1.4.5-lts.1",
-        "path": "^0.12.7",
-        "sharp": "^0.33.4"
+        "archiver": "*",
+        "express": "*",
+        "imagemin": "*",
+        "imagemin-svgo": "*",
+        "imagemin-webp": "*",
+        "multer": "*",
+        "path": "*",
+        "sharp": "*",
+        "url": "*"
     }
 }

@@ -1,4 +1,5 @@
 import path from 'path';
+import { fileURLToPath } from 'url';
 import fs from 'fs';
 import sharp from 'sharp';
 import imagemin from 'imagemin';
@@ -7,6 +8,10 @@ import imageminSvgo from 'imagemin-svgo';
 import multer from 'multer';
 import express from 'express';
 import archiver from 'archiver';
+
+// Workaround to get __dirname in ES modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // Setup multer storage and file filter
 const storage = multer.memoryStorage();
@@ -37,9 +42,7 @@ const options = {
     index: 'index.html'
 };
 
-app.get('/', (req, res) => {
-    res.sendFile('index.html', { root: '.' });
-});
+app.use(express.static(path.join(__dirname, 'public')));
 
 const clients = [];
 
@@ -64,11 +67,11 @@ function sendProgressUpdate(data) {
 }
 
 // Define a route to handle multiple file uploads and other form data
-app.post('/mix', upload.array('images', 1000), async (req, res) => {
-    console.log('Files:', req.files); // Files information (in memory)
-    console.log('Form Data:', req.body); // Other form data
+app.post('/process', upload.array('images', 1000), async (req, res) => {
 
     if (req.files && req.files.length > 0) {
+        let maxWidth = Number(req.body.max_width);
+
         try {
             const archive = archiver('zip', { zlib: { level: 9 } });
             res.setHeader('Content-Type', 'application/zip');
@@ -79,13 +82,16 @@ app.post('/mix', upload.array('images', 1000), async (req, res) => {
             let totalFiles = req.files.length;
             let processedFiles = 0;
 
-            for (const file of req.files) {
-                const buffer = await Resize(file.buffer);
+            await Promise.all(req.files.map(async (file) => {
+                let buffer = file.buffer;
+
+                if (maxWidth > 0) {
+                    buffer = await Resize(buffer, maxWidth);
+                }
                 const optimizedFiles = await OptimizeWebp(buffer);
 
                 // Ensure optimizedFiles[0].data is a Buffer
                 if (optimizedFiles.length > 0) {
-                    console.log('OPTIMIZED FILES: ', optimizedFiles);
                     const webpBuffer = Buffer.from(optimizedFiles[0].data);
                     archive.append(webpBuffer, { name: file.originalname.replace(/\.[^/.]+$/, ".webp") });
 
@@ -97,7 +103,7 @@ app.post('/mix', upload.array('images', 1000), async (req, res) => {
                         totalFiles: totalFiles
                     });
                 }
-            }
+            }));
 
             archive.finalize();
 
@@ -117,9 +123,9 @@ app.listen(port, () => {
 });
 
 // Helper functions
-async function Resize(srcBuffer) {
+async function Resize(srcBuffer, maxWidth) {
     return await sharp(srcBuffer)
-        .resize({ width: 2048, withoutEnlargement: true })
+        .resize({ width: maxWidth, withoutEnlargement: true })
         .trim()
         .toBuffer();
 }
