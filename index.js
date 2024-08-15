@@ -40,7 +40,7 @@ app.register(fastifyFormbody);
 app.register(fastifyMultipart);
 app.register(fastifyStatic, {
     root: path.join(process.cwd(), 'public'),
-    prefix: '/', // optional: default '/'
+    prefix: '/public/', // optional: default '/'
 });
 
 // SSE clients list
