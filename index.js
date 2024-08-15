@@ -8,6 +8,8 @@ import multer from 'fastify-multer'; // Fastify-compatible multer
 import fastify from 'fastify';
 import archiver from 'archiver';
 import fastifyStatic from '@fastify/static'; // Fastify static plugin
+import formbody from '@fastify/formbody';
+import multipart from '@fastify/multipart';
 
 // Workaround to get __dirname in ES modules
 const __filename = fileURLToPath(import.meta.url);
@@ -33,8 +35,8 @@ const upload = multer({
 const app = fastify();
 
 // Register necessary plugins
-app.register(require('@fastify/formbody'));
-app.register(require('@fastify/multipart'));
+app.register(formbody);
+app.register(multipart);
 
 // Register fastify-static to serve static files
 app.register(fastifyStatic, {
