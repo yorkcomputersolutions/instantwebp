@@ -39,7 +39,7 @@ app.register(require('@fastify/formbody'));
 app.register(require('@fastify/multipart'));
 app.register(require('@fastify/static'), {
     root: path.join(__dirname, 'public'),
-    prefix: '/public/', // optional: default '/'
+    prefix: '/', // optional: default '/'
 });
 
 // SSE clients list
