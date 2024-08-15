@@ -39,9 +39,8 @@ const app = Fastify();
 app.register(fastifyFormbody);
 app.register(fastifyMultipart);
 app.register(fastifyStatic, {
-    root: path.join(process.cwd(), 'public'),
-    prefix: '/public/', // optional: default '/'
-    constraints: { host: 'instantwebp.com' } // optional: default {}
+    root: path.join(__dirname, 'public'),
+    prefix: '/assets/' // optional: default '/'
 });
 
 // SSE clients list
