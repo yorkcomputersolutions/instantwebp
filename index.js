@@ -4,12 +4,13 @@ import fs from 'fs';
 import sharp from 'sharp';
 import imagemin from 'imagemin';
 import imageminWebp from 'imagemin-webp';
-import multer from 'fastify-multer'; // Fastify-compatible multer
-import fastify from 'fastify';
+import imageminSvgo from 'imagemin-svgo';
+import multer from 'fastify-multer';  // Fastify-compatible multer
+import Fastify from 'fastify';
 import archiver from 'archiver';
-import fastifyStatic from '@fastify/static'; // Fastify static plugin
-import formbody from '@fastify/formbody';
-import multipart from '@fastify/multipart';
+import fastifyFormbody from '@fastify/formbody';
+import fastifyMultipart from '@fastify/multipart';
+import fastifyStatic from '@fastify/static';
 
 // Workaround to get __dirname in ES modules
 const __filename = fileURLToPath(import.meta.url);
@@ -32,7 +33,7 @@ const upload = multer({
     }
 });
 
-const app = fastify();
+const app = Fastify();
 
 // Register necessary plugins
 app.register(fastifyFormbody);
@@ -121,7 +122,7 @@ app.listen({ port }, (err) => {
         console.error(err);
         process.exit(1);
     }
-    console.log(`Server is listening at http://localhost:${port}`);
+    console.log(`my app is listening at http://localhost:${port}`);
 });
 
 // Helper functions
