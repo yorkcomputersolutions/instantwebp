@@ -6,11 +6,9 @@ import imagemin from 'imagemin';
 import imageminWebp from 'imagemin-webp';
 import imageminSvgo from 'imagemin-svgo';
 import multer from 'fastify-multer';  // Fastify-compatible multer
-import Fastify from 'fastify';
+import fastify from 'fastify';
 import archiver from 'archiver';
-import fastifyFormbody from '@fastify/formbody';
-import fastifyMultipart from '@fastify/multipart';
-import fastifyStatic from '@fastify/static';
+import fastifyStatic from '@fastify/static'; // Ensure you import fastify-static correctly
 
 // Workaround to get __dirname in ES modules
 const __filename = fileURLToPath(import.meta.url);
@@ -33,14 +31,14 @@ const upload = multer({
     }
 });
 
-const app = Fastify();
+const app = fastify();
 
 // Register necessary plugins
-app.register(fastifyFormbody);
-app.register(fastifyMultipart);
+app.register(require('@fastify/formbody'));
+app.register(require('@fastify/multipart'));
 app.register(fastifyStatic, {
     root: path.join(__dirname, 'public'),
-    prefix: '/assets/' // optional: default '/'
+    prefix: '/', // Serve static files from the root
 });
 
 // SSE clients list
