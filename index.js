@@ -1,3 +1,5 @@
+
+Copy code
 import path from 'path';
 import { fileURLToPath } from 'url';
 import fs from 'fs';
@@ -8,7 +10,6 @@ import imageminSvgo from 'imagemin-svgo';
 import multer from 'fastify-multer';  // Fastify-compatible multer
 import fastify from 'fastify';
 import archiver from 'archiver';
-import fastifyStatic from '@fastify/static'; // Ensure you import fastify-static correctly
 
 // Workaround to get __dirname in ES modules
 const __filename = fileURLToPath(import.meta.url);
@@ -36,9 +37,9 @@ const app = fastify();
 // Register necessary plugins
 app.register(require('@fastify/formbody'));
 app.register(require('@fastify/multipart'));
-app.register(fastifyStatic, {
+app.register(require('@fastify/static'), {
     root: path.join(__dirname, 'public'),
-    prefix: '/', // Serve static files from the root
+    prefix: '/', // optional: default '/'
 });
 
 // SSE clients list
