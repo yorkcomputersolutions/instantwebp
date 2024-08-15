@@ -35,18 +35,11 @@ const upload = multer({
 const app = fastify();
 
 // Register necessary plugins
-app.register(formbody);
-app.register(multipart);
-
-// Register fastify-static to serve static files
+app.register(fastifyFormbody);
+app.register(fastifyMultipart);
 app.register(fastifyStatic, {
     root: path.join(__dirname, 'public'),
-    prefix: '/', // Serve static files from the root path
-});
-
-// Define a route to serve the index.html file
-app.get('/', async (req, res) => {
-    res.sendFile('index.html'); // Serves public/index.html
+    prefix: '/', // optional: default '/'
 });
 
 // SSE clients list
