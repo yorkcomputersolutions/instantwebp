@@ -1,15 +1,13 @@
-
-Copy code
 import path from 'path';
 import { fileURLToPath } from 'url';
 import fs from 'fs';
 import sharp from 'sharp';
 import imagemin from 'imagemin';
 import imageminWebp from 'imagemin-webp';
-import imageminSvgo from 'imagemin-svgo';
-import multer from 'fastify-multer';  // Fastify-compatible multer
+import multer from 'fastify-multer'; // Fastify-compatible multer
 import fastify from 'fastify';
 import archiver from 'archiver';
+import fastifyStatic from '@fastify/static'; // Fastify static plugin
 
 // Workaround to get __dirname in ES modules
 const __filename = fileURLToPath(import.meta.url);
@@ -37,9 +35,16 @@ const app = fastify();
 // Register necessary plugins
 app.register(require('@fastify/formbody'));
 app.register(require('@fastify/multipart'));
-app.register(require('@fastify/static'), {
+
+// Register fastify-static to serve static files
+app.register(fastifyStatic, {
     root: path.join(__dirname, 'public'),
-    prefix: '/', // optional: default '/'
+    prefix: '/', // Serve static files from the root path
+});
+
+// Define a route to serve the index.html file
+app.get('/', async (req, res) => {
+    res.sendFile('index.html'); // Serves public/index.html
 });
 
 // SSE clients list
@@ -121,7 +126,7 @@ app.listen({ port }, (err) => {
         console.error(err);
         process.exit(1);
     }
-    console.log(`my app is listening at http://localhost:${port}`);
+    console.log(`Server is listening at http://localhost:${port}`);
 });
 
 // Helper functions
