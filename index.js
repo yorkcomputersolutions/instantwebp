@@ -110,15 +110,15 @@ app.post('/process', { preHandler: upload.array('images', 1000) }, async (req, r
 
             archive.finalize();
 
-            req.files = null;
+            delete req.files;
 
         } catch (error) {
             console.error('Error processing files:', error);
-            req.files = null;
+            delete req.files;
             res.status(500).send({ statusCode: 0, message: 'File processing failed!', error: error.message });
         }
     } else {
-        req.files = null;
+        delete req.files;
         res.status(400).send({ statusCode: 0, message: 'No files uploaded!' });
     }
 });
