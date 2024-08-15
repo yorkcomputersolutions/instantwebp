@@ -29,7 +29,7 @@ const upload = multer({
     storage: storage,
     fileFilter: imgfileFilter,
     limits: {
-        fieldSize: 1024 * 1024 * 2
+        fieldSize: 1024 * 1024 * 10
     }
 });
 
@@ -41,6 +41,10 @@ app.register(fastifyMultipart);
 app.register(fastifyStatic, {
     root: path.join(__dirname, 'public'),
     prefix: '/', // optional: default '/'
+});
+
+app.get('/style', async (req, res) => {
+    res.sendFile('public/style.css'); // Should serve the file if everything is correct
 });
 
 // SSE clients list
