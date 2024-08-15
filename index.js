@@ -41,6 +41,7 @@ app.register(fastifyMultipart);
 app.register(fastifyStatic, {
     root: path.join(process.cwd(), 'public'),
     prefix: '/public/', // optional: default '/'
+    constraints: { host: 'instantwebp.com' } // optional: default {}
 });
 
 // SSE clients list
